@@ -1,0 +1,10 @@
+Job Category,Skill Subcluster,Job Count,Percentage of Category,Top Terms
+Graphic Design,0,133,42.2,"['design', 'status', 'graphics', 'creative', 'graphic', 'company', 'customers', 'working', '00', 'production']"
+Graphic Design,1,55,17.5,"['design', 'packaging', 'product', 'designs', 'graphic', 'products', 'digital', 'development', 'data', 'print']"
+Graphic Design,2,127,40.3,"['design', 'marketing', 'digital', 'graphic', 'creative', 'brand', 'media', 'designer', 'social', 'print']"
+Marketing,0,299,54.8,"['content', 'marketing', 'digital', 'social', 'writing', 'management', 'product', 'business', 'seo', 'design']"
+Marketing,1,39,7.1,"['ai', 'chatbots', 'conversations', 'paypal', 'teach', 'usd', 'fact', 'order', 'progress', 'quality']"
+Marketing,2,208,38.1,"['social', 'media', 'marketing', 'content', 'brand', 'platforms', 'client', 'clients', 'creative', 'paid']"
+Product and UX,0,163,39.6,"['design', 'user', 'ux', 'product', 'research', 'ui', 'designer', 'designs', 'interaction', 'development']"
+Product and UX,1,219,53.2,"['design', 'web', 'content', 'product', 'user', 'digital', 'development', 'marketing', 'website', 'ux']"
+Product and UX,2,30,7.3,"['ai', 'chatbots', 'code', 'coding', 'proficient', 'able', 'quality', 'paypal', 'train', 'usd']"

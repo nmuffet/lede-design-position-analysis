@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design Jobs Visualization</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <style>
+      /* A little CSS to center our chart */
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+      }
+    </style>
+</head>
+<body>
+    <div id="my-svg-chart"></div>
+
+    <script>
+        const width = 640;
+        const height = 640;
+
+        // Load the correct data file
+
+        d3.csv("data/percents.csv").then(data => {
+          let nodes = [];
+
+          data.forEach(d => {
+            for(let i = 0; i< +d.total_percentage; ++i){
+              let newNode = {'category':d.category};
+
+              if (d.category ==='Graphic Design'){
+                newNode.fill='orange'
+              }
+              else if (d.category == 'Marketing'){
+                newNode.fill='pink'
+              }
+              else{
+                newNode.fill = 'red'
+              };
+              nodes.push(newNode);
+              console.log(nodes);
+            }
+          });
+
+          let svg = d3.select('#my-svg-chart')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+          let circleNodes = svg.selectAll('circle')
+            .data(nodes)
+            .join('circle');
+
+          circleNodes
+            .attr('r', 6)
+            .attr('cx', width/2)
+            .attr('cy', height/2)
+            .style('fill', d => d.fill);
+        
+        // d3.csv("data/percents.csv").then(data => {
+
+        //     // --- Our new data transformation step ---
+        //     const nodes = [];
+        //     data.forEach(d => {
+        //         // For each category, create a number of nodes equal to its percentage
+        //         for (let i = 0; i < +d.total_percentage; i++) {
+        //             // Add a new node object to our array. It just needs the category for now.
+        //             nodes.push({ category: d.category });
+        //         }
+        //     });
+        //     // At this point, `nodes` is an array of 100 objects!
+        //     // You can check in your browser's developer console
+        //     console.log(nodes);
+            // -----------------------------------------
+
+            // const svg = d3
+            //     .select('#my-svg-chart')
+            //     .append('svg')
+            //     .attr('width', width)
+            //     .attr('height', height);
+
+            // // NOW, we bind our newly created `nodes` array
+            // const circleNodes = svg
+            //     .selectAll('circle')
+            //     .data(nodes) // Use the new `nodes` array
+            //     .join('circle')
+            //     .attr('r', 8) // Made them a bit bigger
+            //     .style('fill', 'orange') // We'll change this next
+            //     .attr('cx', width / 2)
+            //     .attr('cy', height / 2);
+
+            const simulation = d3.forceSimulation(nodes) // Pass the `nodes` to the simulation
+                .force("center", d3.forceCenter(width / 2, height / 2))
+                .force("charge", d3.forceManyBody().strength(0.5))
+                .force("collide", d3.forceCollide().radius(10)); // Adjusted radius for collision
+
+            simulation.on("tick", () => {
+                circleNodes
+                    .attr("cx", d => d.x)
+                    .attr("cy", d => d.y);
+            });
+        });
+    </script>
+</body>
+</html>

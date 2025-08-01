@@ -7,16 +7,23 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
     <style>
       /* A little CSS to center our chart */
-      body {
+      #my-svg-chart {
         display: flex;
         justify-content: center;
         align-items: center;
-        min-height: 100vh;
+        min-height: 80vh;
         margin: 0;
+      }
+
+      body {
+        font-family: sans-serif;
+        
       }
     </style>
 </head>
 <body>
+  <h1>Design Jobs are Becoming More Diversified</h1>
+  <h2>Graphic design positions now require more expertise in marketing and software development.</h2>
     <div id="my-svg-chart"></div>
 
     <script>
@@ -25,25 +32,29 @@
 
         // Load the correct data file
 
-        d3.csv("data/percents.csv").then(data => {
+        d3.csv("data/job_postings_matched_with_companies.csv").then(data => {
           let nodes = [];
 
           data.forEach(d => {
-            for(let i = 0; i< +d.total_percentage; ++i){
-              let newNode = {'category':d.category};
+            // for(let i = 0; i< +d.total_percentage; ++i){
+              let newNode = {'category':d['Final label']};
+              console.log(d['Final label']);
 
-              if (d.category ==='Graphic Design'){
+              if (d['Final label'] =='Graphic Design'){
                 newNode.fill='orange'
               }
-              else if (d.category == 'Marketing'){
+              else if (d['Final label'] == 'Marketing'){
                 newNode.fill='pink'
               }
               else{
                 newNode.fill = 'red'
-              };
+              }
+              ;
+              newNode.r = 6;
               nodes.push(newNode);
               console.log(nodes);
-            }
+            // };
+
           });
 
           let svg = d3.select('#my-svg-chart')
@@ -56,53 +67,47 @@
             .join('circle');
 
           circleNodes
-            .attr('r', 6)
+            .attr('r', d=>d.r)
             .attr('cx', width/2)
             .attr('cy', height/2)
-            .style('fill', d => d.fill);
+            .style('fill', d => d.fill)
+            .call(d3.drag() // call specific function when circle is dragged. This will break if functions not defined, so taking out for now.
+              .on("start", dragstarted)
+              .on("drag", dragged)
+              .on("end", dragended))
+              ;
         
-        // d3.csv("data/percents.csv").then(data => {
+          function dragstarted(){};
+          function dragged(){};
+          function dragended(){};
 
-        //     // --- Our new data transformation step ---
-        //     const nodes = [];
-        //     data.forEach(d => {
-        //         // For each category, create a number of nodes equal to its percentage
-        //         for (let i = 0; i < +d.total_percentage; i++) {
-        //             // Add a new node object to our array. It just needs the category for now.
-        //             nodes.push({ category: d.category });
-        //         }
-        //     });
-        //     // At this point, `nodes` is an array of 100 objects!
-        //     // You can check in your browser's developer console
-        //     console.log(nodes);
-            // -----------------------------------------
 
-            // const svg = d3
-            //     .select('#my-svg-chart')
-            //     .append('svg')
-            //     .attr('width', width)
-            //     .attr('height', height);
 
-            // // NOW, we bind our newly created `nodes` array
-            // const circleNodes = svg
-            //     .selectAll('circle')
-            //     .data(nodes) // Use the new `nodes` array
-            //     .join('circle')
-            //     .attr('r', 8) // Made them a bit bigger
-            //     .style('fill', 'orange') // We'll change this next
-            //     .attr('cx', width / 2)
-            //     .attr('cy', height / 2);
+          const simulation = d3.forceSimulation(nodes) // Pass the `nodes` to the simulation
+              .force("center", d3.forceCenter(width / 2, height / 2))
+              .force("charge", d3.forceManyBody().strength(1))
+              .force("collide", d3.forceCollide().radius(d => d.r + d.r/2)); // Adjusted radius for collision
 
-            const simulation = d3.forceSimulation(nodes) // Pass the `nodes` to the simulation
-                .force("center", d3.forceCenter(width / 2, height / 2))
-                .force("charge", d3.forceManyBody().strength(0.5))
-                .force("collide", d3.forceCollide().radius(10)); // Adjusted radius for collision
+          simulation.on("tick", () => {
+              circleNodes
+                  .attr("cx", d => d.x)
+                  .attr("cy", d => d.y);
+          });
+          // `event` is now the first argument
+          function dragstarted(event, d) {
+            // You use the `event` argument instead of the global `d3.event`
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+          }
 
-            simulation.on("tick", () => {
-                circleNodes
-                    .attr("cx", d => d.x)
-                    .attr("cy", d => d.y);
-            });
+          function dragged(event, d) {
+            // `event.x` and `event.y` come from the argument
+            d.fx = event.x;
+            d.fy = event.y;
+          }
+
+
         });
     </script>
 </body>

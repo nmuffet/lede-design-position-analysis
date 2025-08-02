@@ -7,108 +7,193 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
     <style>
       /* A little CSS to center our chart */
-      #my-svg-chart {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 80vh;
-        margin: 0;
-      }
 
       body {
         font-family: sans-serif;
+        overflow: visible;
+        background-color:ivory;
         
+      }
+      button{
+        padding: 8px;
+        background-color: gray;
+        color: white;
+        font-size: 16px;
+        border-radius: 4px;
+        border: none;
+      }
+      button:hover{
+        background-color: rgb(83, 83, 83);
+      }
+
+      .tooltip{
+        display: flex;
+        flex-direction: column;
+        width: 200px;
+        padding: 16px;
+        background-color: white;
+        border: 1px rgb(196, 196, 196) solid;
+        position:absolute;
+        font-size: 12px;
+        border-radius: 4px;
+        opacity:0;
+
+      }
+      .tooltip span{
+        margin-bottom: 6px;
+
       }
     </style>
 </head>
 <body>
   <h1>Design Jobs are Becoming More Diversified</h1>
   <h2>Graphic design positions now require more expertise in marketing and software development.</h2>
-    <div id="my-svg-chart"></div>
-
+    <div id="canvas-container"></div>
+    <div class="tooltip"></div> 
+    <button id="my-button">Transition</button>
     <script>
         const width = 640;
-        const height = 640;
+        const height = 800;
+        let previousNode = null;
+        const originalRadius = 3;
+        const hoverRadius = 10;
 
         // Load the correct data file
 
-        d3.csv("data/job_postings_matched_with_companies.csv").then(data => {
+        d3.csv("data/no_marketing_writing.csv").then(data => {
           let nodes = [];
-
           data.forEach(d => {
-            // for(let i = 0; i< +d.total_percentage; ++i){
               let newNode = {'category':d['Final label']};
               console.log(d['Final label']);
+              //this starts as false because I have to use a function to update the nodes, they don't do it if the state is just reassigned. The function must run once on instantiation or color and targetY will not be assigned to begin.
+              newNode.clusteredState = false;
+              newNode.company = d['company_name'];
+              newNode.title = d['title'];
+              newNode.description = d['description'];
+              newNode.flipClustered = function(){
 
-              if (d['Final label'] =='Graphic Design'){
-                newNode.fill='orange'
-              }
-              else if (d['Final label'] == 'Marketing'){
-                newNode.fill='pink'
-              }
-              else{
-                newNode.fill = 'red'
-              }
+                newNode.clusteredState = !newNode.clusteredState;
+                if (newNode.clusteredState === false){
+                  if (d['Final label'] =='Graphic Design'){
+                    newNode.fill='orange'
+                    newNode.targetY = height/2;
+                  }
+                  else if (d['Final label'] == 'Marketing'){
+                    newNode.fill='pink'
+                    newNode.targetY = height /2 +250;
+                  }
+                  else{
+                    newNode.fill = 'red'
+                    newNode.targetY = height/2 - 250;
+                  }
+                }
+                else {
+                  newNode.fill = 'gray';
+                  newNode.targetY = height/2;
+                }
+            };
               ;
-              newNode.r = 6;
+              newNode.flipClustered();
+              newNode.r = originalRadius;
               nodes.push(newNode);
               console.log(nodes);
-            // };
+            });
 
-          });
+            let canvas = d3.select('#canvas-container')
+                .append('canvas')
+                .attr('width', width)
+                .attr('height', height)
+                .attr('id', 'my-canvas');
 
-          let svg = d3.select('#my-svg-chart')
-            .append('svg')
-            .attr('width', width)
-            .attr('height', height);
+            const ctx = canvas.node().getContext('2d');
 
-          let circleNodes = svg.selectAll('circle')
-            .data(nodes)
-            .join('circle');
+            const simulation = d3.forceSimulation(nodes) // Pass the `nodes` to the simulation
 
-          circleNodes
-            .attr('r', d=>d.r)
-            .attr('cx', width/2)
-            .attr('cy', height/2)
-            .style('fill', d => d.fill)
-            .call(d3.drag() // call specific function when circle is dragged. This will break if functions not defined, so taking out for now.
-              .on("start", dragstarted)
-              .on("drag", dragged)
-              .on("end", dragended))
-              ;
-        
-          function dragstarted(){};
-          function dragged(){};
-          function dragended(){};
+                // .force("center", d3.forceCenter(width/2, height / 2))
+                .force("x", d3.forceX( width/2))
+                .force("y", d3.forceY(d => d.targetY))
+
+
+                .force("charge", d3.forceManyBody().strength(-.2))
+                .force("collide", d3.forceCollide().radius(d => d.r + d.r/2)); // Adjusted radius for collision
 
 
 
-          const simulation = d3.forceSimulation(nodes) // Pass the `nodes` to the simulation
-              .force("center", d3.forceCenter(width / 2, height / 2))
-              .force("charge", d3.forceManyBody().strength(1))
-              .force("collide", d3.forceCollide().radius(d => d.r + d.r/2)); // Adjusted radius for collision
 
-          simulation.on("tick", () => {
-              circleNodes
-                  .attr("cx", d => d.x)
-                  .attr("cy", d => d.y);
-          });
-          // `event` is now the first argument
-          function dragstarted(event, d) {
-            // You use the `event` argument instead of the global `d3.event`
-            if (!event.active) simulation.alphaTarget(0.3).restart();
-            d.fx = d.x;
-            d.fy = d.y;
-          }
+            function draw() {
+                    // Clear the canvas on each frame
+                ctx.clearRect(0, 0, width, height);
 
-          function dragged(event, d) {
-            // `event.x` and `event.y` come from the argument
-            d.fx = event.x;
-            d.fy = event.y;
-          }
+                //draw circles
+                nodes.forEach(d => {
+                    ctx.beginPath();
+                    ctx.arc(d.x,d.y, d.r, 0, 2*Math.PI);
+                    ctx.fillStyle=d.fill;
+                    ctx.fill();
+                    ctx.closePath();
+                });
+
+            };
+
+            simulation.on("tick", draw);
+
+            canvas.on("mousemove",(event) =>{
+                let m = {
+                    'x': d3.pointer(event)[0],
+                    'y': d3.pointer(event)[1]
+                };
+                // console.log(`The mouse is at x ${m.x}, y ${m.y}`)
+                selectedNode = simulation.find(m.x, m.y, 8);
+
+                let tip = d3.select('.tooltip');
+                if (selectedNode) {
+                    console.log(selectedNode);
+                    // display tooltip. .tooltip already styled in style head
+
+                    tip.style('top', event.pageY+'px')
+                        .style('left', event.pageX+'px')
+                        .style('opacity',1)
+                        .html(`<span style="font-size: 14px;"><strong>${selectedNode.category}</strong></span>
+                        <span><strong>Company:</strong> ${selectedNode.company}</span>
+                        <span><strong> Position:</strong> ${selectedNode.title}</span>`);
+                    selectedNode.r = hoverRadius;
+                    // If we moved to a new node, shrink the old one
+                    if (previousNode && selectedNode !== previousNode) {
+                        previousNode.r = originalRadius;
+                            }
+                    previousNode = selectedNode
+                }
+                else {
+                    tip.style('opacity', 0);
+
+                    if(previousNode){
+                    previousNode.r = originalRadius;
+                    previousNode = null;
+                    }
+                    
+                };
+                draw();
+
+            });
+            d3.select('#my-button').on('click', () => {
+              nodes.forEach(d => {
+
+               d.flipClustered();
+
+              });
+
+               // 3. Re-apply the force to make the simulation aware of the new targets
+                //    and increase its strength to make the transition clear.
+                simulation.force("y", d3.forceY(d => d.targetY));
 
 
-        });
+                simulation.alpha(1).restart();
+            });
+  });
+
+;
     </script>
+
+
 </body>
 </html>

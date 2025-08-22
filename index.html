@@ -114,7 +114,7 @@
                 .force("y", d3.forceY(d => d.targetY))
 
 
-                .force("charge", d3.forceManyBody().strength(-.2))
+                .force("charge", d3.forceManyBody().strength())
                 .force("collide", d3.forceCollide().radius(d => d.r + d.r/2)); // Adjusted radius for collision
 
 
@@ -185,6 +185,7 @@
                // 3. Re-apply the force to make the simulation aware of the new targets
                 //    and increase its strength to make the transition clear.
                 simulation.force("y", d3.forceY(d => d.targetY));
+
 
 
                 simulation.alpha(1).restart();

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <article>
+        <!--This will be the top section before the scrolly-->
+        <img>
+        <section id="intro">
+            <p>As design production becomes further democratized through software improvements and generative AI, designers are being asked to have deeper specialization across more categories. Job postings want designers to be identity experts, videographers, animators, and 3D modelers all in the same position. The 2022 LinkedIn Future of Skills Economic Graph showed that since 2015, terms like "Adobe Illustrator", and "Art Direction" had fallen out of favor in job postings and been replaced by interactive, system oriented skills such as "Brand & Identity", and "User Interface Design". The lines at the boundaries are blurring. For marketing positions, the same report showed that skills such as "Graphic Design", "Canva", and "Content Strategy" were newly required skills, absorbing some of the technical and visual expertise traditionally assigned to designers.</p>
+
+            <p>Out of a sample of 100,000 LinkedIn jobs, roughly 2,000 were likely to be design or content positions when filtering by job title.</p>
+        </section>
+        
+        <section id="scrolly">
+            <!-- This part is going to be sticky. It will stick to the center of the screen and be my d3 canvas which will update on scroll -->
+            <figure>
+                <canvas id="d3-canvas"></canvas>
+            </figure>
+            <div class="step" data-step="1">
+                <p>Step text.</p>
+            </div>
+
+                        <div class="step" data-step="2">
+                <p>Step text.</p>
+            </div>
+
+                        <div class="step" data-step="3">
+                <p>Step text.</p>
+            </div>
+        </section>
+
+    </article>
+    <script src="scrollama.min.js"></script>
+    <script src="myscrolly.js"></script>
+    
+</body>
+</html>
+
+
+

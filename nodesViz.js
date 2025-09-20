@@ -4,6 +4,32 @@ let nodes = [];
 let simulation;
 let previousNode;
 let originalRadius;
+let canvas;
+let categoryCenters = {
+    graphicDesign: {
+        targetX: 0,
+        targetY: 0
+    },
+    ux: {
+        targetX: 0,
+        targetY: 0
+    },
+    marketing: {
+        targetX: 0,
+        targetY: 0
+    },
+    updateCategoryCenters: function(){
+        this.marketing.targetX = nodes.filter((node)=>node.category=='Marketing')[0].targetX;
+        this.marketing.targetY = nodes.filter((node)=>node.category=='Marketing')[0].targetY;
+
+        this.graphicDesign.targetX = nodes.filter((node)=>node.category=='Graphic Design')[0].targetX;
+        this.graphicDesign.targetY = nodes.filter((node)=>node.category=='Graphic Design')[0].targetY;
+
+        this.ux.targetX = nodes.filter((node)=>node.category=='Product and UX')[0].targetX;
+        this.ux.targetY = nodes.filter((node)=>node.category=='Product and UX')[0].targetY;
+        
+    }
+};
 
 d3.csv('data/no_marketing_writing.csv').then(initViz);
 
@@ -11,17 +37,23 @@ d3.csv('data/no_marketing_writing.csv').then(initViz);
 
 function initViz(data){
     console.log('initViz running');
-    
+
     width = 640;
     height = 800;
     originalRadius = 4;
+
+
     
-    let canvas = d3.select('#canvas-container')
+    canvas = d3.select('#canvas-container')
         .append('canvas')
         .attr('width', width)
         .attr('height', height)
         .attr('id', 'my-canvas');
     ctx = canvas.node().getContext('2d');
+
+    window.addEventListener('resize', resizeCanvas);
+    
+    
     
    
     console.log('creating nodes');
@@ -34,6 +66,8 @@ function initViz(data){
     
     console.log('defining simulation');
     simulation = createSimulation(nodes);
+
+    resizeCanvas();
 
 
     console.log(nodes);
@@ -59,6 +93,12 @@ function createNode(d) {
         targetX: width/2,
         targetY: height/2,
         radius: originalRadius,
+        offsetX: 0,
+        offsetY: 0,
+        updateTarget: function(currentWidth,currentHeight) {
+            this.targetX = (currentWidth/2) + this.offsetX;
+            this.targetY = (currentHeight/2) + this.offsetY;
+        }
     }
     return newNode;
 }
@@ -75,28 +115,31 @@ function stateChanger(desiredState, nodeArray){
                     node.fill='gray';
                 });
                 console.log(`stateChanger case ${desiredState}`);
-                simulation.force("y", d3.forceY(d => d.targetY));
+                simulation.force("x", d3.forceX(d => d.targetX));
                 simulation.alpha(.5).restart();
                 break;
 
             case 'step2':
+                const offset= .2;
                 nodeArray.forEach(node =>{
                     if (node.category ==='Graphic Design'){
                     node.fill='orange'
-                    node.targetY = height/2;
+                    node.offsetX = 0;
                     }
                     else if (node.category === 'Marketing'){
                     node.fill='pink'
-                    node.targetY = height /2 +250;
+                    node.offsetX = width * offset;
                     }
                     else{
                     node.fill = 'red'
-                    node.targetY = height/2 - 250;
+                    node.offsetX = -width * offset;
                     }
-                });
+                    node.updateTarget(width,height);
+                })
+                categoryCenters.updateCategoryCenters();
                 console.log(`stateChanger case ${desiredState}`);
 
-                simulation.force("y", d3.forceY(d => d.targetY));
+                simulation.force("x", d3.forceX(d => d.targetX));
 
                 simulation.alpha(.5).restart();
                 break;
@@ -175,4 +218,18 @@ function hoverNode(event){
     showTip(selectedNode);
     draw(nodes);
 
+}
+
+function resizeCanvas() {
+    const container = document.getElementById('canvas-container');
+    const w = container.offsetWidth;
+    const h = container.offsetHeight;
+    canvas.attr('width', w).attr('height', h);
+    width = w;
+    height = h;
+    nodes.forEach(node => node.updateTarget(width,height));
+    simulation.force("x", d3.forceX(d => d.targetX));
+    simulation.force("y", d3.forceY(d => d.targetY));
+    simulation.alpha(0.5).restart();
+    draw(nodes);
 }

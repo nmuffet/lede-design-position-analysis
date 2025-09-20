@@ -11,8 +11,8 @@ var scroller = scrollama();
 // generic window resize listener event
 function handleResize() {
     // 1. update height of step elements
-    var stepH = Math.floor(window.innerHeight * 0.75);
-    step.style("height", stepH + "px");
+    // var stepH = Math.floor(window.innerHeight * 0.75);
+    // step.style("height", stepH + "px");
 
     var figureHeight = window.innerHeight / 2;
     var figureMarginTop = (window.innerHeight - figureHeight) / 2;
@@ -41,7 +41,7 @@ function handleStepEnter(response) {
     const stepValue = response.element.dataset.step;
     console.log(`stepvalue is ${stepValue}`);
 
-    if (stepValue == 1)
+    if ((stepValue == 1) & (response.direction=='up'))
         {console.log('should trigger window.flipNodes()');
         stateChanger('step1', nodes);
         }       
@@ -63,7 +63,7 @@ function init() {
     scroller
         .setup({
             step: "#scrolly article .step",
-            offset: 0.33,
+            offset: 0.80,
             debug: false
         })
         .onStepEnter(handleStepEnter);

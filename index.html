@@ -1,200 +1,69 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Design Jobs Visualization</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
-    <style>
-      /* A little CSS to center our chart */
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<title>Scrollama: Sticky Side Example</title>
+	<meta name="description" content="Scrollama: Sticky Side Example" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
 
-      body {
-        font-family: sans-serif;
-        overflow: visible;
-        background-color:ivory;
-        
-      }
-      button{
-        padding: 8px;
-        background-color: gray;
-        color: white;
-        font-size: 16px;
-        border-radius: 4px;
-        border: none;
-      }
-      button:hover{
-        background-color: rgb(83, 83, 83);
-      }
-
-      .tooltip{
-        display: flex;
-        flex-direction: column;
-        width: 200px;
-        padding: 16px;
-        background-color: white;
-        border: 1px rgb(196, 196, 196) solid;
-        position:absolute;
-        font-size: 12px;
-        border-radius: 4px;
-        opacity:0;
-
-      }
-      .tooltip span{
-        margin-bottom: 6px;
-
-      }
-    </style>
+	<link rel="stylesheet" href="myscrolly.css" />
 </head>
+
 <body>
-  <h1>Design Jobs are Becoming More Diversified</h1>
-  <h2>Graphic design positions now require more expertise in marketing and software development.</h2>
-    <div id="canvas-container"></div>
-    <div class="tooltip"></div> 
-    <button id="my-button">Transition</button>
-    <script>
-        const width = 640;
-        const height = 800;
-        let previousNode = null;
-        const originalRadius = 3;
-        const hoverRadius = 10;
+	<main>
 
-        // Load the correct data file
+		<section id="intro">
+			<h1>Intro</h1>
+			<p>
+                As design production becomes further democratized through software improvements and generative AI, designers are being asked to have deeper specialization across more categories. Job postings want designers to be identity experts, videographers, animators, and 3D modelers all in the same position. The 2022 LinkedIn Future of Skills Economic Graph showed that since 2015, terms like "Adobe Illustrator", and "Art Direction" had fallen out of favor in job postings and been replaced by interactive, system oriented skills such as "Brand & Identity", and "User Interface Design". The lines at the boundaries are blurring. For marketing positions, the same report showed that skills such as "Graphic Design", "Canva", and "Content Strategy" were newly required skills, absorbing some of the technical and visual expertise traditionally assigned to designers.              
+            </p>
 
-        d3.csv("data/no_marketing_writing.csv").then(data => {
-          let nodes = [];
-          data.forEach(d => {
-              let newNode = {'category':d['Final label']};
-              console.log(d['Final label']);
-              //this starts as false because I have to use a function to update the nodes, they don't do it if the state is just reassigned. The function must run once on instantiation or color and targetY will not be assigned to begin.
-              newNode.clusteredState = false;
-              newNode.company = d['company_name'];
-              newNode.title = d['title'];
-              newNode.description = d['description'];
-              newNode.flipClustered = function(){
+            <p>
+                Out of a sample of 100,000 LinkedIn jobs, roughly 2,000 were likely to be design or content positions when filtering by job title for a subset of design specific terms like "graphic", "illustrator", "content", and "UX". 
+			</p>
+		</section>
 
-                newNode.clusteredState = !newNode.clusteredState;
-                if (newNode.clusteredState === false){
-                  if (d['Final label'] =='Graphic Design'){
-                    newNode.fill='orange'
-                    newNode.targetY = height/2;
-                  }
-                  else if (d['Final label'] == 'Marketing'){
-                    newNode.fill='pink'
-                    newNode.targetY = height /2 +250;
-                  }
-                  else{
-                    newNode.fill = 'red'
-                    newNode.targetY = height/2 - 250;
-                  }
-                }
-                else {
-                  newNode.fill = 'gray';
-                  newNode.targetY = height/2;
-                }
-            };
-              ;
-              newNode.flipClustered();
-              newNode.r = originalRadius;
-              nodes.push(newNode);
-              console.log(nodes);
-            });
+		<section id="scrolly">
+			<figure>
+				 <div id="canvas-container"></div>
+				 <div id="tooltip"></div> 
+	
+			</figure>
+			<article>
+				<div class="step" data-step="1">
+					<p>
+                        By using K-means clustering analysis on the title, description, and required skills of job postings, terms that frequently appear together were grouped. When these groups are viewed as a whole, three types of visual communication positions emerge—content marketing, traditional visual communication design, and product design or UX.
+                    </p>
+				</div>
+				<div class="step" data-step="2">
+					<p>
+                        The patterns seen in the Future of Skills Economic Graph are reflected in position titles. Marketing positions take on roles such as "Content Specialist" or "Social Media Manager", both of which require graphic production in the form of design, photography, or video.
+                    </p>
+				</div>
+				<div class="step" data-step="3">
+					<p>STEP 3</p>
+				</div>
+				<div class="step" data-step="4">
+					<p>STEP 4</p>
+				</div>
+			</article>
 
-            let canvas = d3.select('#canvas-container')
-                .append('canvas')
-                .attr('width', width)
-                .attr('height', height)
-                .attr('id', 'my-canvas');
+		</section>
 
-            const ctx = canvas.node().getContext('2d');
+		<section id="outro"></section>
+	</main>
 
-            const simulation = d3.forceSimulation(nodes) // Pass the `nodes` to the simulation
+	<!-- <div class='debug'></div> -->
+	  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+	 <script src="./scrollama.min.js"></script>
+	 <script src = "./scrolly.js"></script>
 
-                // .force("center", d3.forceCenter(width/2, height / 2))
-                .force("x", d3.forceX( width/2))
-                .force("y", d3.forceY(d => d.targetY))
-
-
-                .force("charge", d3.forceManyBody().strength())
-                .force("collide", d3.forceCollide().radius(d => d.r + d.r/2)); // Adjusted radius for collision
-
-
-
-
-            function draw() {
-                    // Clear the canvas on each frame
-                ctx.clearRect(0, 0, width, height);
-
-                //draw circles
-                nodes.forEach(d => {
-                    ctx.beginPath();
-                    ctx.arc(d.x,d.y, d.r, 0, 2*Math.PI);
-                    ctx.fillStyle=d.fill;
-                    ctx.fill();
-                    ctx.closePath();
-                });
-
-            };
-
-            simulation.on("tick", draw);
-
-            canvas.on("mousemove",(event) =>{
-                let m = {
-                    'x': d3.pointer(event)[0],
-                    'y': d3.pointer(event)[1]
-                };
-                // console.log(`The mouse is at x ${m.x}, y ${m.y}`)
-                selectedNode = simulation.find(m.x, m.y, 8);
-
-                let tip = d3.select('.tooltip');
-                if (selectedNode) {
-                    console.log(selectedNode);
-                    // display tooltip. .tooltip already styled in style head
-
-                    tip.style('top', event.pageY+'px')
-                        .style('left', event.pageX+'px')
-                        .style('opacity',1)
-                        .html(`<span style="font-size: 14px;"><strong>${selectedNode.category}</strong></span>
-                        <span><strong>Company:</strong> ${selectedNode.company}</span>
-                        <span><strong> Position:</strong> ${selectedNode.title}</span>`);
-                    selectedNode.r = hoverRadius;
-                    // If we moved to a new node, shrink the old one
-                    if (previousNode && selectedNode !== previousNode) {
-                        previousNode.r = originalRadius;
-                            }
-                    previousNode = selectedNode
-                }
-                else {
-                    tip.style('opacity', 0);
-
-                    if(previousNode){
-                    previousNode.r = originalRadius;
-                    previousNode = null;
-                    }
-                    
-                };
-                draw();
-
-            });
-            d3.select('#my-button').on('click', () => {
-              nodes.forEach(d => {
-
-               d.flipClustered();
-
-              });
-
-               // 3. Re-apply the force to make the simulation aware of the new targets
-                //    and increase its strength to make the transition clear.
-                simulation.force("y", d3.forceY(d => d.targetY));
-
-
-
-                simulation.alpha(1).restart();
-            });
-  });
-
-;
-    </script>
+	<!-- <script src="./d3-prototype.js"></script> -->
+	 <script src="./nodesViz.js"></script>
 
 
 </body>
+
 </html>

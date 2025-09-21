@@ -5,6 +5,7 @@ let simulation;
 let previousNode;
 let originalRadius;
 let canvas;
+let orientationMode='horizontal';
 let categoryCenters = {
     graphicDesign: {
         targetX: 0,
@@ -116,30 +117,59 @@ function stateChanger(desiredState, nodeArray){
                 });
                 console.log(`stateChanger case ${desiredState}`);
                 simulation.force("x", d3.forceX(d => d.targetX));
+                simulation.force("y", d3.forceY(d => d.targetY));
                 simulation.alpha(.5).restart();
                 break;
 
             case 'step2':
-                const offset= .2;
-                nodeArray.forEach(node =>{
-                    if (node.category ==='Graphic Design'){
-                    node.fill='orange'
-                    node.offsetX = 0;
-                    }
-                    else if (node.category === 'Marketing'){
-                    node.fill='pink'
-                    node.offsetX = width * offset;
-                    }
-                    else{
-                    node.fill = 'red'
-                    node.offsetX = -width * offset;
-                    }
-                    node.updateTarget(width,height);
-                })
-                categoryCenters.updateCategoryCenters();
-                console.log(`stateChanger case ${desiredState}`);
+                let offset= .25;
+                if (orientationMode=='portrait'){
+                    offset = .4;
+                }
+                if (orientationMode == 'horizontal'){
+                    nodeArray.forEach(node =>{
+                        if (node.category ==='Graphic Design'){
+                        node.fill='orange'
+                        node.offsetX = 0;
+                        }
+                        else if (node.category === 'Marketing'){
+                        node.fill='pink'
+                        node.offsetX = width * offset;
+                        }
+                        else{
+                        node.fill = 'red'
+                        node.offsetX = -width * offset;
+                        }
+                        node.updateTarget(width,height);
+                    })
+                    categoryCenters.updateCategoryCenters();
+                    console.log(`stateChanger case ${desiredState}`);
 
-                simulation.force("x", d3.forceX(d => d.targetX));
+                    simulation.force("x", d3.forceX(d => d.targetX));
+                } 
+                else{
+                        nodeArray.forEach(node =>{
+                        if (node.category ==='Graphic Design'){
+                        node.fill='orange'
+                        node.offsetY = 0;
+                        }
+                        else if (node.category === 'Marketing'){
+                        node.fill='pink'
+                        node.offsetY = height * offset;
+                        }
+                        else{
+                        node.fill = 'red'
+                        node.offsetY = -height * offset;
+                        }
+                        node.updateTarget(width,height);
+                        })
+                    categoryCenters.updateCategoryCenters();
+                    console.log(`stateChanger case ${desiredState}`);
+
+                    simulation.force("y", d3.forceY(d => d.targetY));
+
+
+                }
 
                 simulation.alpha(.5).restart();
                 break;
@@ -160,7 +190,6 @@ function createSimulation(nodeArray){
 }
 
 function draw(nodeArray){
-    console.log('drawing');
      ctx.clearRect(0, 0, width, height);
 
     //draw circles
@@ -181,7 +210,6 @@ function hoverNode(event){
             'x': d3.pointer(event)[0],
             'y': d3.pointer(event)[1]
         };
-        // console.log(`The mouse is at x ${m.x}, y ${m.y}`)
         let selectedNode = simulation.find(m.x, m.y, 8);
 
 
@@ -224,9 +252,15 @@ function resizeCanvas() {
     const container = document.getElementById('canvas-container');
     const w = container.offsetWidth;
     const h = container.offsetHeight;
-    canvas.attr('width', w).attr('height', h);
     width = w;
     height = h;
+    canvas.attr('width', w).attr('height', h);
+    if (width<1400){
+        orientationMode = 'vertical';
+    }
+    else {
+        orientationMode = 'horizontal';
+    }
     nodes.forEach(node => node.updateTarget(width,height));
     simulation.force("x", d3.forceX(d => d.targetX));
     simulation.force("y", d3.forceY(d => d.targetY));

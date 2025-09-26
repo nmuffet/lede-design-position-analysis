@@ -1,3 +1,24 @@
+body{
+	font-family:'IBM Plex Sans'
+}
+
+ul {
+    line-height: 2.5rem;
+}
+
+p {
+    max-width: 34em;
+    font-size: 1.25rem;
+    line-height: 1.5;
+    margin: 0;
+    display: block;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+    unicode-bidi: isolate;
+}
+
 #canvas-container {
     width: 100%;
 	height: 100vh;
@@ -78,7 +99,7 @@
         background-color: white;
         border: 1px rgb(196, 196, 196) solid;
         position:absolute;
-        font-size: 12px;
+        font-size: 1.25rem;
         border-radius: 4px;
 		z-index:2;
         opacity:0;
@@ -89,3 +110,19 @@
         margin-bottom: 6px;
 
       }
+
+	  .cat-labels{
+		position: absolute;
+        z-index: 1000;
+		text-align:center;
+		font-size:3rem;
+		transform: translateX(-50%);
+		font-weight: 500;
+	  }
+	  
+
+	  @media (max-width: 1400px) {
+		.cat-labels{
+			font-size:18px;
+		}
+	  }

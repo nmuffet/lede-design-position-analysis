@@ -2,33 +2,57 @@
 let width, height, ctx;
 let nodes = [];
 let simulation;
-let previousNode;
 let originalRadius;
 let canvas;
 let orientationMode='horizontal';
 let categoryCenters = {
-    graphicDesign: {
-        targetX: 0,
-        targetY: 0
-    },
-    ux: {
-        targetX: 0,
-        targetY: 0
-    },
-    marketing: {
-        targetX: 0,
-        targetY: 0
+    categories: {
+        graphicDesign: {
+            name:'Graphic Design',
+            targetX: 0,
+            targetY: 0
+        },
+        ux: {
+            name:"UX",
+            targetX: 0,
+            targetY: 0
+        },
+        marketing: {
+            name:'Marketing',
+            targetX: 0,
+            targetY: 0
+        }
     },
     updateCategoryCenters: function(){
-        this.marketing.targetX = nodes.filter((node)=>node.category=='Marketing')[0].targetX;
-        this.marketing.targetY = nodes.filter((node)=>node.category=='Marketing')[0].targetY;
+        this.categories.marketing.targetX = nodes.filter((node)=>node.category=='Marketing')[0].targetX;
+        this.categories.marketing.targetY = nodes.filter((node)=>node.category=='Marketing')[0].targetY;
 
-        this.graphicDesign.targetX = nodes.filter((node)=>node.category=='Graphic Design')[0].targetX;
-        this.graphicDesign.targetY = nodes.filter((node)=>node.category=='Graphic Design')[0].targetY;
+        this.categories.graphicDesign.targetX = nodes.filter((node)=>node.category=='Graphic Design')[0].targetX;
+        this.categories.graphicDesign.targetY = nodes.filter((node)=>node.category=='Graphic Design')[0].targetY;
 
-        this.ux.targetX = nodes.filter((node)=>node.category=='Product and UX')[0].targetX;
-        this.ux.targetY = nodes.filter((node)=>node.category=='Product and UX')[0].targetY;
+        this.categories.ux.targetX = nodes.filter((node)=>node.category=='Product and UX')[0].targetX;
+        this.categories.ux.targetY = nodes.filter((node)=>node.category=='Product and UX')[0].targetY;
         
+    },
+
+    labelDisplayer: function(flag){
+        if(flag=='on'){
+           for(let categoryName in this.categories){
+                const category = this.categories[categoryName];
+                const label = d3.select('#canvas-container')
+                    .append("div")
+                    .classed("cat-labels", true);
+                label.style("top", `${category.targetY - 200}px`)
+                    .style("left", `${category.targetX}px`)
+                    .style("z-index", "1000")
+                    .html(`${category.name}`);
+            };
+        }
+            else {
+                d3.selectAll('.cat-labels').remove();
+            }
+           
+
     }
 };
 
@@ -74,7 +98,7 @@ function initViz(data){
     console.log(nodes);
 
     console.log('adding event listeners');
-    canvas.on('mousemove',hoverNode);
+    canvas.on('mousemove', (event) => showJobInfo.hoverNode(event));
 
     simulation.on("tick", ()=>draw(nodes));
 }
@@ -143,6 +167,7 @@ function stateChanger(desiredState, nodeArray){
                         node.updateTarget(width,height);
                     })
                     categoryCenters.updateCategoryCenters();
+
                     console.log(`stateChanger case ${desiredState}`);
 
                     simulation.force("x", d3.forceX(d => d.targetX));
@@ -203,48 +228,47 @@ function draw(nodeArray){
 
 }
 
-function hoverNode(event){
-    let tooltip = d3.select('#tooltip');
-    
-    let m = {
-            'x': d3.pointer(event)[0],
-            'y': d3.pointer(event)[1]
-        };
-        let selectedNode = simulation.find(m.x, m.y, 8);
+let showJobInfo = {
+    tooltip: d3.select('#tooltip'),
+    selectedNode: null,
+    previousNode: null, // Move previousNode into this object
+    hoverNode: function(event){
+        let currentStep = d3.select('.is-active');
+        if(currentStep.attr('data-step')!='3'){
+            let m = {
+                'x': d3.pointer(event)[0],
+                'y': d3.pointer(event)[1]
+            };
+            this.selectedNode = simulation.find(m.x, m.y, 8);
+            this.showTip(this.selectedNode);
+            draw(nodes);
+        }
+    },
+    showTip: function (selectedNode) {
+        if(this.previousNode){
+            this.previousNode.radius = originalRadius;
+        }
 
-
-    function showTip(selectedNode) {
         if(selectedNode){
-            tooltip.style('top', selectedNode.y+'px')
+            this.tooltip.style('top', selectedNode.y+'px')
             .style('left', selectedNode.x+'px')
             .style('opacity', 1)
             .html(
-                `<span style="font-size: 14px;"><strong>${selectedNode.category}</strong></span>
-                <span><strong>Company:</strong> ${selectedNode.company}</span>
-                <span><strong> Position:</strong> ${selectedNode.title}</span>`);
+                `<span><strong>${selectedNode.category}</strong></span>
+                <span><strong>Company</strong><br>${selectedNode.company}</span>
+                <span><strong> Position<br></strong>${selectedNode.title}</span>`);
 
             let hoverRadius = originalRadius*2;
             selectedNode.radius = hoverRadius;
-
-            // If we moved to a new node, shrink the old one
-            if (previousNode && selectedNode !== previousNode) {
-                previousNode.radius = originalRadius;
-                }
-            previousNode = selectedNode
+            this.previousNode = selectedNode;
         }
         else {
-            tooltip.style('opacity', 0);
-
-            if(previousNode){
-            previousNode.radius = originalRadius;
-            previousNode = null;
-            }
-            
-        };
+            this.tooltip.style('opacity', 0);
+            this.previousNode = null;
+        }
+        
+        draw(nodes);
     }
-
-    showTip(selectedNode);
-    draw(nodes);
 
 }
 
@@ -266,4 +290,5 @@ function resizeCanvas() {
     simulation.force("y", d3.forceY(d => d.targetY));
     simulation.alpha(0.5).restart();
     draw(nodes);
+    categoryCenters.updateCategoryCenters();
 }

@@ -45,12 +45,19 @@ function handleStepEnter(response) {
     if ((stepValue == 1) & (response.direction=='up'))
         {console.log('should trigger window.flipNodes()');
         stateChanger('step1', nodes);
+        categoryCenters.labelDisplayer('off');
         }       
 
     if (stepValue == 2)
         {console.log('should trigger window.flipNodes()');
         stateChanger('step2', nodes);
+        categoryCenters.labelDisplayer('on');
         }
+
+    if (stepValue == 3)
+    {
+        showJobInfo.showTip(nodes.filter((node)=>node.category=='Marketing')[25]);
+    }
 }
 
 function init() {

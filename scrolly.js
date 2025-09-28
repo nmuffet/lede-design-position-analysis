@@ -58,6 +58,18 @@ function handleStepEnter(response) {
     {
         showJobInfo.showTip(nodes.filter((node)=>node.category=='Marketing')[25]);
     }
+    if (stepValue == 4)
+    {
+        showJobInfo.showTip(nodes.filter((node)=>node.index==266)[0]);
+    }
+    if (stepValue == 5)
+    {
+        showJobInfo.showTip(nodes.filter((node)=>node.index==930)[0]);
+    }
+    if (stepValue == 6)
+    {
+        waffleChart.buildChart(nodes);
+    }
 }
 
 function init() {

@@ -5,6 +5,7 @@ let simulation;
 let originalRadius;
 let canvas;
 let orientationMode='horizontal';
+let responsiveTriggerWidth = 1300;
 let categoryCenters = {
     categories: {
         graphicDesign: {
@@ -113,6 +114,7 @@ function createNode(d) {
         state: null,
         company: d['company_name'],
         title: d['title'],
+        index: d['index'],
         description: d['description'],
         fill: 'gray',
         targetX: width/2,
@@ -234,7 +236,8 @@ let showJobInfo = {
     previousNode: null, // Move previousNode into this object
     hoverNode: function(event){
         let currentStep = d3.select('.is-active');
-        if(currentStep.attr('data-step')!='3'){
+        let blockedSteps = ['3','4','5'];
+        if(!blockedSteps.includes(currentStep.attr('data-step'))){
             let m = {
                 'x': d3.pointer(event)[0],
                 'y': d3.pointer(event)[1]
@@ -256,7 +259,8 @@ let showJobInfo = {
             .html(
                 `<span><strong>${selectedNode.category}</strong></span>
                 <span><strong>Company</strong><br>${selectedNode.company}</span>
-                <span><strong> Position<br></strong>${selectedNode.title}</span>`);
+                <span><strong> Position<br></strong>${selectedNode.title}</span>
+                <br><span>debug:index${selectedNode.index}</span>`);
 
             let hoverRadius = originalRadius*2;
             selectedNode.radius = hoverRadius;
@@ -279,7 +283,7 @@ function resizeCanvas() {
     width = w;
     height = h;
     canvas.attr('width', w).attr('height', h);
-    if (width<1400){
+    if (width<responsiveTriggerWidth){
         orientationMode = 'vertical';
     }
     else {
@@ -291,4 +295,34 @@ function resizeCanvas() {
     simulation.alpha(0.5).restart();
     draw(nodes);
     categoryCenters.updateCategoryCenters();
+}
+
+
+let waffleChart = {
+
+    buildChart: function(nodesArray) {
+    let margin = width/6;
+    let x = margin;
+    let y = 0;
+    let cellSize = nodes[0].radius*2+2;
+        nodesArray.forEach(node=>{
+            node.targetX = x;
+            node.targetY = y;
+            x+= cellSize;
+
+            if(x>width-margin*2 - cellSize/2){
+                x = margin;
+                y+=cellSize;
+            }
+        
+        })
+    //you should probably just build a handler that restarts the simulation on every step change and asks if it is a rigid layout (like this) or if there should be collision.
+    simulation.force("collision", d3.forceCollide().radius(0));
+    simulation.force("x", d3.forceX(d => d.targetX));
+    simulation.force("y", d3.forceY(d => d.targetY));
+    simulation.alpha(1).restart();
+    
+    draw(nodesArray);
+    
+    }
 }
